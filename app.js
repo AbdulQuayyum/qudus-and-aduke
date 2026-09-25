@@ -5,7 +5,7 @@
 
   const SPOTIFY_URL = 'https://open.spotify.com/track/2xN98jvoGdfBzPS0HDMlXT?si=c57a2409c438401e';
 
-  // All 21 new photos, used as-is (no format conversion).
+  // All 23 new photos, used as-is (no format conversion).
   // Note: .png files only render natively in Safari/iOS. If you notice
   // broken images in Chrome/Firefox/Android, that's why — swap those
   // filenames for .jpg versions later and nothing else needs to change.
@@ -34,12 +34,13 @@
     'IMG_3281.PNG',
     'IMG_3282.PNG'
   ].map((f) => `assets/${f}`);
-
   // Memories section is 3 static hand-picked photos, unchanged, in the HTML.
-  // The full set of 21 is used for the Movie slideshow only.
+  // The full set of 23 is used for the Movie slideshow only.
   const MOVIE_IMAGES = NEW_PHOTOS;
 
-  const MOVIE_SLIDE_MS = 2600;
+  const MOVIE_SLIDE_MS = 4200;
+  const STACK_SIZE = 4;
+  const STACK_TRANSITION_MS = 650; // keep in sync with the .movie-stack-card transition duration in styles.css
 
   const scenes = [...document.querySelectorAll('.scene')];
   const byId = (id) => document.getElementById(id);
@@ -181,8 +182,7 @@
   }
 
   let movieIndex = 0;
-  let movieLayers = [];
-  let movieActiveLayer = 0;
+  let stackOrder = []; // DOM cards, front-to-back order; stackOrder[0] is the visible front card
   let moviePlaying = !reducedMotion; // start paused if reduced motion is preferred
   let movieRaf = null;
   let movieSlideStart = 0;
@@ -193,26 +193,31 @@
     if (movieBuilt) return;
     movieBuilt = true;
 
-    const layerA = document.createElement('img');
-    const layerB = document.createElement('img');
-    [layerA, layerB].forEach((img) => {
-      img.className = 'movie-img';
+    for (let slot = 0; slot < STACK_SIZE; slot += 1) {
+      const card = document.createElement('div');
+      const img = document.createElement('img');
       img.decoding = 'async';
-      img.alt = '';
-      img.setAttribute('aria-hidden', 'true');
-    });
+      img.src = MOVIE_IMAGES[slot % MOVIE_IMAGES.length];
+      if (slot === 0) {
+        img.alt = 'A photo from our first year';
+      } else {
+        img.alt = '';
+        img.setAttribute('aria-hidden', 'true');
+      }
+      card.appendChild(img);
+      card._img = img;
+      movieFrames.appendChild(card);
+      stackOrder.push(card);
+    }
 
-    layerA.src = MOVIE_IMAGES[0];
-    layerA.classList.add('is-active');
-    layerA.alt = 'A photo from our first year';
-    layerA.removeAttribute('aria-hidden');
-
-    movieFrames.appendChild(layerA);
-    movieFrames.appendChild(layerB);
-    movieLayers = [layerA, layerB];
-    movieActiveLayer = 0;
-
+    applyStackSlots();
     updateMovieCounter();
+  }
+
+  function applyStackSlots() {
+    stackOrder.forEach((card, slot) => {
+      card.className = `movie-stack-card stack-slot-${slot}`;
+    });
   }
 
   function updateMovieCounter() {
@@ -229,34 +234,51 @@
     movieProgressFill.style.width = `${Math.min(100, Math.max(0, pct))}%`;
   }
 
-  function crossfadeMovieTo(index) {
-    const nextLayer = movieLayers[(movieActiveLayer + 1) % 2];
-    const currentLayer = movieLayers[movieActiveLayer];
+  // Rotates the physical stack by one card. direction 1 = next photo (front
+  // card drops to the very back of the deck); direction -1 = previous photo
+  // (back card comes forward to the front).
+  function rotateStack(direction) {
+    const total = MOVIE_IMAGES.length;
 
-    nextLayer.src = MOVIE_IMAGES[index];
-    nextLayer.alt = 'A photo from our first year';
+    if (direction === 1) {
+      const leaving = stackOrder.shift();
+      stackOrder.push(leaving);
+      movieIndex = (movieIndex + 1) % total;
 
-    // Force reflow so the browser registers the new src before we
-    // animate opacity/scale in (needed for the Ken Burns transform reset).
-    void nextLayer.offsetWidth;
+      // The card that just left the front is now the hidden buffer at the
+      // very back — swap its photo only once it's fully faded out, so the
+      // photo doesn't visibly pop mid-animation.
+      const newSrc = MOVIE_IMAGES[(movieIndex + STACK_SIZE - 1) % total];
+      window.setTimeout(() => { leaving._img.src = newSrc; }, STACK_TRANSITION_MS);
+    } else {
+      const entering = stackOrder.pop();
+      stackOrder.unshift(entering);
+      movieIndex = (movieIndex - 1 + total) % total;
 
-    nextLayer.classList.add('is-active');
-    currentLayer.classList.remove('is-active');
+      // Coming from the invisible back of the deck to the front, so the
+      // photo must already be correct before it becomes visible.
+      entering._img.src = MOVIE_IMAGES[movieIndex];
+    }
 
-    movieActiveLayer = (movieActiveLayer + 1) % 2;
+    stackOrder.forEach((card, slot) => {
+      if (slot === 0) {
+        card._img.alt = 'A photo from our first year';
+        card._img.removeAttribute('aria-hidden');
+      } else {
+        card._img.alt = '';
+        card._img.setAttribute('aria-hidden', 'true');
+      }
+    });
+
+    applyStackSlots();
     updateMovieCounter();
   }
 
-  function goToMovieSlide(index, { resetTimer = true } = {}) {
+  function stepMovie(direction) {
     cancelAnimationFrame(movieRaf);
-    movieIndex = ((index % MOVIE_IMAGES.length) + MOVIE_IMAGES.length) % MOVIE_IMAGES.length;
-    crossfadeMovieTo(movieIndex);
-
-    if (resetTimer) {
-      movieElapsedBeforePause = 0;
-      setMovieProgress(0);
-    }
-
+    rotateStack(direction);
+    movieElapsedBeforePause = 0;
+    setMovieProgress(0);
     if (moviePlaying) startMovieTick();
   }
 
@@ -267,7 +289,7 @@
     setMovieProgress(pct);
 
     if (elapsed >= MOVIE_SLIDE_MS) {
-      goToMovieSlide(movieIndex + 1);
+      stepMovie(1);
       return;
     }
     movieRaf = requestAnimationFrame(movieTick);
@@ -326,15 +348,15 @@
     }
   });
 
-  byId('movieNext').addEventListener('click', () => goToMovieSlide(movieIndex + 1));
-  byId('moviePrev').addEventListener('click', () => goToMovieSlide(movieIndex - 1));
-  byId('movieTapNext').addEventListener('click', () => goToMovieSlide(movieIndex + 1));
-  byId('movieTapPrev').addEventListener('click', () => goToMovieSlide(movieIndex - 1));
+  byId('movieNext').addEventListener('click', () => stepMovie(1));
+  byId('moviePrev').addEventListener('click', () => stepMovie(-1));
+  byId('movieTapNext').addEventListener('click', () => stepMovie(1));
+  byId('movieTapPrev').addEventListener('click', () => stepMovie(-1));
 
   const movieStage = byId('movieStage');
   movieStage.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowRight') goToMovieSlide(movieIndex + 1);
-    if (e.key === 'ArrowLeft') goToMovieSlide(movieIndex - 1);
+    if (e.key === 'ArrowRight') stepMovie(1);
+    if (e.key === 'ArrowLeft') stepMovie(-1);
     if (e.key === ' ' || e.key === 'Spacebar') {
       e.preventDefault();
       moviePlaying ? pauseMovie() : resumeMovie();
@@ -351,8 +373,8 @@
     const dx = e.changedTouches[0].clientX - movieTouchStartX;
     movieTouchStartX = null;
     if (Math.abs(dx) < 40) return;
-    if (dx < 0) goToMovieSlide(movieIndex + 1);
-    else goToMovieSlide(movieIndex - 1);
+    if (dx < 0) stepMovie(1);
+    else stepMovie(-1);
   }, { passive: true });
 
   // Pause the slideshow when the tab isn't visible, resume where it left off.

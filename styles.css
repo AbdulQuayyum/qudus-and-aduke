@@ -1111,8 +1111,8 @@ button:focus-visible,
   max-height: 74svh;
   border-radius: 26px;
   overflow: hidden;
-  background: #1a1013;
-  box-shadow: 0 26px 60px rgba(22, 22, 22, .22);
+  /* background: #1a1013; */
+  /* box-shadow: 0 26px 60px rgba(22, 22, 22, .22); */
   touch-action: pan-y;
   -webkit-user-select: none;
   user-select: none;
@@ -1123,31 +1123,57 @@ button:focus-visible,
   inset: 0;
 }
 
-.movie-img {
+.movie-stack-card {
   position: absolute;
-  inset: 0;
+  inset: 10px;
+  border-radius: 20px;
+  overflow: hidden;
+  /* background: #1a1013;
+  border: 3px solid rgba(255, 255, 255, .92);
+  box-shadow: 0 16px 34px rgba(20, 6, 10, .30); */
+  transition: transform 650ms cubic-bezier(.22, 1, .36, 1), opacity 480ms ease;
+  will-change: transform, opacity;
+}
+
+.movie-stack-card img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0;
-  transition: opacity 900ms var(--ease);
-  will-change: opacity;
-  z-index: 1;
+  display: block;
 }
 
-.movie-img.is-active {
+.stack-slot-0 {
+  transform: translate(0, 0) scale(1) rotate(0deg);
   opacity: 1;
+  z-index: 4;
+}
+
+.stack-slot-1 {
+  transform: translate(10px, 16px) scale(.93) rotate(-4deg);
+  opacity: .92;
+  z-index: 3;
+}
+
+.stack-slot-2 {
+  transform: translate(-10px, 28px) scale(.87) rotate(5deg);
+  opacity: .6;
   z-index: 2;
+}
+
+.stack-slot-3 {
+  transform: translate(6px, 36px) scale(.82) rotate(-6deg);
+  opacity: 0;
+  z-index: 1;
 }
 
 .movie-scrim {
   position: absolute;
   inset: 0;
-  z-index: 3;
+  z-index: 5;
   pointer-events: none;
-  background:
-    linear-gradient(180deg, rgba(0, 0, 0, .22), transparent 22%),
-    linear-gradient(0deg, rgba(0, 0, 0, .22), transparent 22%);
+  /* background:
+    linear-gradient(180deg, rgba(0, 0, 0, .18), transparent 22%),
+    linear-gradient(0deg, rgba(0, 0, 0, .18), transparent 22%); */
 }
 
 .movie-tap-zone {
@@ -1238,8 +1264,8 @@ button:focus-visible,
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .movie-img {
-    transition: opacity 300ms linear;
+  .movie-stack-card {
+    transition: opacity 250ms linear !important;
   }
 
   .movie-progress-fill {
