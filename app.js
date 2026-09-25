@@ -189,6 +189,27 @@
   let movieElapsedBeforePause = 0;
   let movieBuilt = false;
 
+  function preloadImage(src) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(src);
+      img.onerror = () => resolve(src); // don't block forever on one bad file
+      img.src = src;
+    });
+  }
+
+  function preloadImages(urls) {
+    return Promise.all(urls.map(preloadImage));
+  }
+
+  // kick off preloading the *rest* of the deck quietly, after the visible
+  // stack is already up and animating — no need to block on these
+  function preloadRemaining(startAt) {
+    const rest = [];
+    for (let i = startAt; i < MOVIE_IMAGES.length; i += 1) rest.push(MOVIE_IMAGES[i]);
+    preloadImages(rest);
+  }
+
   function buildMovieLayers() {
     if (movieBuilt) return;
     movieBuilt = true;
@@ -212,6 +233,39 @@
 
     applyStackSlots();
     updateMovieCounter();
+  }
+
+  function startMovie() {
+    // Hide the stage until the visible cards are actually loaded, so the
+    // stack animation never plays against a blank/broken image.
+    movieFrames.style.transition = movieFrames.style.transition || 'opacity .35s ease';
+    movieFrames.style.opacity = movieBuilt ? movieFrames.style.opacity : '0';
+
+    buildMovieLayers();
+
+    const readyPromise = preloadImages(
+      MOVIE_IMAGES.slice(0, STACK_SIZE)
+    );
+
+    readyPromise.then(() => {
+      movieFrames.style.opacity = '1';
+      preloadRemaining(STACK_SIZE); // warm the rest in the background
+
+      if (reducedMotion) {
+        moviePlaying = false;
+        updateMoviePlayIcon();
+        setMovieProgress(0);
+        stopMovieAudio(true);
+        return;
+      }
+      moviePlaying = true;
+      updateMoviePlayIcon();
+      movieElapsedBeforePause = 0;
+      setMovieProgress(0);
+      startMovieTick();
+      stopMovieAudio(true);
+      playMovieAudio();
+    });
   }
 
   function applyStackSlots() {
