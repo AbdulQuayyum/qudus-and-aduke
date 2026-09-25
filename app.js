@@ -3,7 +3,7 @@
 
   const SPECIAL_DATE = '051025';
 
-  const SPOTIFY_URL = 'https://open.spotify.com/track/0tgVpDi06FyKpA1z0VMD4v?si=dc9e7616d1da45a3';
+  const SPOTIFY_URL = 'https://open.spotify.com/track/2xN98jvoGdfBzPS0HDMlXT?si=c57a2409c438401e';
 
   const scenes = [...document.querySelectorAll('.scene')];
   const byId = (id) => document.getElementById(id);
