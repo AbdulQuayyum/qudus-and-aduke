@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
   <link
-    href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Manrope:wght@400;500;600;700&family=Parisienne&display=swap"
     rel="stylesheet" />
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -33,21 +33,21 @@
 
           fontFamily: {
             serifdisplay: [
-              '"Cormorant Garamond"',
+              '"Fraunces"',
               'Georgia',
               '"Times New Roman"',
               'serif'
             ],
 
             sans: [
-              'Inter',
+              'Manrope',
               'ui-sans-serif',
               'system-ui',
               'sans-serif'
             ],
 
             handwritten: [
-              'Caveat',
+              'Parisienne',
               'cursive'
             ],
           },
@@ -287,7 +287,6 @@
 
         </div>
 
-
         <div class="memory-grid mt-12">
 
           <article class="memory-card observe-reveal rotate-a">
@@ -333,7 +332,6 @@
 
         </div>
 
-
         <div class="mt-14 text-center">
 
           <button id="memoryContinue" class="soft-button" type="button">
@@ -341,6 +339,68 @@
           </button>
 
         </div>
+
+      </div>
+    </section>
+
+
+    <!-- MOVIE -->
+    <section id="movie" class="scene min-h-[100svh] flex items-center justify-center px-4 sm:px-6 py-10"
+      aria-labelledby="movie-title">
+      <div class="noise-layer" aria-hidden="true"></div>
+
+      <div class="w-full max-w-md relative z-10">
+
+        <div class="text-center mb-6">
+          <p class="eyebrow">Playing our year</p>
+          <h2 id="movie-title" class="mt-2 text-4xl sm:text-5xl font-serifdisplay font-semibold">
+            A little movie of us
+          </h2>
+        </div>
+
+        <div id="movieStage" class="movie-stage" tabindex="0" role="group" aria-roledescription="slideshow"
+          aria-label="Photo movie of our first year">
+
+          <!-- image layers injected by app.js -->
+          <div id="movieFrames" class="movie-frames"></div>
+
+          <div class="movie-scrim" aria-hidden="true"></div>
+
+          <button type="button" id="movieTapPrev" class="movie-tap-zone movie-tap-prev"
+            aria-label="Previous photo"></button>
+          <button type="button" id="movieTapNext" class="movie-tap-zone movie-tap-next"
+            aria-label="Next photo"></button>
+
+          <button type="button" id="moviePrev" class="movie-nav movie-nav-prev" aria-label="Previous photo">‹</button>
+          <button type="button" id="movieNext" class="movie-nav movie-nav-next" aria-label="Next photo">›</button>
+
+        </div>
+
+        <!-- Background song for the movie: plays while the slideshow plays, pauses with it -->
+        <audio id="movieAudio" src="assets/why-I-love-you-by-major.mp3" preload="none" loop></audio>
+
+        <div class="movie-player-bar mt-5">
+
+          <button id="moviePlayPause" type="button" class="music-button" aria-label="Pause slideshow"
+            aria-pressed="true">
+            <span id="moviePlayIcon" aria-hidden="true">❚❚</span>
+          </button>
+
+          <div class="movie-progress-track" role="presentation">
+            <div class="movie-progress-fill" id="movieProgressFill"></div>
+          </div>
+
+          <span class="movie-counter" id="movieCounter" aria-live="off">1 / 1</span>
+
+        </div>
+
+        <p class="text-xs text-[#590016]/40 text-center mt-3">
+          Tap the photo, or the arrows, to move around
+        </p>
+
+        <button id="movieContinue" class="soft-button mt-8 w-full" type="button">
+          Continue ↓
+        </button>
 
       </div>
     </section>

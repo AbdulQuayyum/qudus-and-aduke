@@ -3,9 +3,9 @@
   --ink: #590016;
   --paper: #FFF8F0;
 
-  --font-display: "Cormorant Garamond", Georgia, serif;
-  --font-body: "Inter", system-ui, sans-serif;
-  --font-handwritten: "Caveat", cursive;
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Manrope", system-ui, sans-serif;
+  --font-handwritten: "Parisienne", cursive;
 
   --line: rgba(89, 0, 22, 0.16);
   --accent: #590016;
@@ -597,14 +597,13 @@ button:focus-visible,
 
 .letter-folder {
   display: inline-flex;
-  padding: 7px 11px;
+  padding: 5px 13px 8px;
   margin-bottom: 22px;
   border: 1px solid rgba(255, 255, 255, .13);
   border-radius: 999px;
-  color: rgba(255, 255, 255, .58);
-  font-size: .68rem;
-  letter-spacing: .15em;
-  text-transform: uppercase;
+  color: rgba(255, 255, 255, .68);
+  font-size: 1.05rem;
+  letter-spacing: .01em;
 }
 
 .letter-page-header h3 {
@@ -646,8 +645,8 @@ button:focus-visible,
   padding-top: 20px;
   border-top: 1px solid rgba(255, 255, 255, .10);
   font-family: var(--font-handwritten);
-  font-size: 1.6rem;
-  font-weight: 500;
+  font-size: 2.1rem;
+  font-weight: 400;
   color: rgba(255, 255, 255, .62);
 }
 
@@ -890,7 +889,8 @@ button:focus-visible,
 #letter,
 #intro,
 #memories,
-#finale {
+#finale,
+#movie {
   background: #F2E2D2;
   color: #590016;
 }
@@ -940,7 +940,8 @@ button:focus-visible,
 #song::before,
 #letter::before,
 #memories::before,
-#finale::before {
+#finale::before,
+#movie::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -954,7 +955,8 @@ button:focus-visible,
 #song>*,
 #letter>*,
 #memories>*,
-#finale>* {
+#finale>*,
+#movie>* {
   position: relative;
   z-index: 1;
 }
@@ -1098,4 +1100,149 @@ button:focus-visible,
 .spotify-embed iframe {
   display: block;
   border: 0;
+}
+
+/* ===================== MOVIE (photo slideshow) ===================== */
+
+.movie-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  max-height: 74svh;
+  border-radius: 26px;
+  overflow: hidden;
+  background: #1a1013;
+  box-shadow: 0 26px 60px rgba(22, 22, 22, .22);
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.movie-frames {
+  position: absolute;
+  inset: 0;
+}
+
+.movie-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 900ms var(--ease);
+  will-change: opacity;
+  z-index: 1;
+}
+
+.movie-img.is-active {
+  opacity: 1;
+  z-index: 2;
+}
+
+.movie-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, .22), transparent 22%),
+    linear-gradient(0deg, rgba(0, 0, 0, .22), transparent 22%);
+}
+
+.movie-tap-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 42%;
+  z-index: 4;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.movie-tap-prev {
+  left: 0;
+}
+
+.movie-tap-next {
+  right: 0;
+}
+
+.movie-nav {
+  position: absolute;
+  top: 50%;
+  z-index: 5;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, .28);
+  background: rgba(22, 22, 22, .30);
+  color: #fff;
+  font-size: 1.3rem;
+  line-height: 1;
+  transform: translateY(-50%);
+  transition: background 180ms var(--ease), transform 180ms var(--ease);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.movie-nav:hover {
+  background: rgba(22, 22, 22, .48);
+}
+
+.movie-nav:active {
+  transform: translateY(-50%) scale(.92);
+}
+
+.movie-nav-prev {
+  left: 10px;
+}
+
+.movie-nav-next {
+  right: 10px;
+}
+
+.movie-player-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.movie-progress-track {
+  flex: 1;
+  height: 4px;
+  border-radius: 99px;
+  background: rgba(89, 0, 22, .14);
+  overflow: hidden;
+}
+
+.movie-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--ink);
+  border-radius: 99px;
+}
+
+.movie-counter {
+  min-width: 46px;
+  text-align: right;
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+  color: rgba(89, 0, 22, .55);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .movie-img {
+    transition: opacity 300ms linear;
+  }
+
+  .movie-progress-fill {
+    transition: none !important;
+  }
 }
